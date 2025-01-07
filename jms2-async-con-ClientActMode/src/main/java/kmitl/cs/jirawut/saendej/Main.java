@@ -138,6 +138,7 @@ public class Main {
                     if (message instanceof TextMessage) {
                         try {
                             System.out.println("Received message: " + ((TextMessage) message).getText());
+                            message.acknowledge();
                         } catch (JMSException e) {
                             System.err.println("Error processing message: " + e.getMessage());
                         }
