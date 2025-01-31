@@ -34,7 +34,7 @@ public class Main {
             listener = new TextListener();
             MessageConsumer responseConsumer = session.createConsumer(replyQueue);
             responseConsumer.setMessageListener(listener);
-            message = session.createTextMessage();
+            message = session.createTextMessage()
             message.setText("Hello friend" );
             message.setJMSReplyTo(replyQueue);
             //Set a correlation ID so when you get a response you know which sent message the response is for
