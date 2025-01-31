@@ -8,41 +8,41 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         InitialContext initialContext;
-        ConnectionFactory connectionFactory;
-        Queue requestQueue;
-        Queue replyQueue;
+        ConnectionFactory connectionFactory = null;
+        Queue requestQueue = null;
+        TextMessage message;
 
         try {
             initialContext = new InitialContext();
             connectionFactory = (ConnectionFactory) initialContext.lookup("ConnectionFactory");
             requestQueue = (Queue) initialContext.lookup("RequestQueue");
-            replyQueue = (Queue) initialContext.lookup("ReplyQueue");
-        } catch (NamingException | JMSException e) {
+
+        } catch (NamingException e) {
             throw new RuntimeException(e);
         }
         try (JMSContext context = connectionFactory.createContext()) {
             JMSProducer producer = context.createProducer();
-            JMSConsumer responseConsumer = context.createConsumer(replyQueue);
+            Queue tempDest = context.createTemporaryQueue();
+            JMSConsumer responseConsumer = context.createConsumer(tempDest);
 
             responseConsumer.setMessageListener(new TextListener());
 
-            TextMessage message = context.createTextMessage("Hello friend");
-            message.setJMSReplyTo(replyQueue);
+            message = context.createTextMessage("Hello friend");
+            message.setJMSReplyTo(tempDest);
             message.setJMSCorrelationID("12345");
 
             System.out.println("Sending message: " + message.getText());
             producer.send(requestQueue, message);
-            System.out.println("Message ID: " + message.getJMSMessageID());
 
             Scanner inp = new Scanner(System.in);
-            String ch;
             while (true) {
                 System.out.print("Press q to quit: ");
-                ch = inp.nextLine();
-                if (ch.equals("q")) {
+                if ("q".equals(inp.nextLine())) {
                     break;
                 }
             }
+        } catch (JMSException e) {
+            throw new RuntimeException(e);
         }
     }
 }
